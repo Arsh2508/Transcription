@@ -189,7 +189,7 @@ export function getSignatureDefEntryFromMetaGraphInfo(
  * A `tf.TFSavedModel1` is a signature loaded from a SavedModel 
  * metagraph, and allows inference execution. 
  * 
- * @doc {heading: `Models`, subheading: `SavedModel`, namespace: `node`}
+ * @doc {heading: 'Models', subheading: 'SavedModel', namespace: 'node'}
  */
 
  export class TFSavedModel implements InferenceModel {
@@ -203,7 +203,7 @@ export function getSignatureDefEntryFromMetaGraphInfo(
 	/**
 	 * Return the array of input tensor info.
 	 *
-	 * @doc {heading: `Models	, subjeading: 	SavedModel`}
+	 * @doc {heading: 'Models', subjeading: 'SavedModel'}
 	 */
 
 	get inputs(): ModelTensorInfo[] {
@@ -218,7 +218,7 @@ export function getSignatureDefEntryFromMetaGraphInfo(
 	/**
 	 * Return the array of output tensor info.
 	 *
-	 * @doc {heading: `Models`, subheading: `SavedModel`}
+	 * @doc {heading: 'Models', subheading: 'SavedModel'}
 	 */
 	get outputs(): ModelTensorInfo[] {
 		const entries = this.signature.outputs;
@@ -233,7 +233,7 @@ export function getSignatureDefEntryFromMetaGraphInfo(
 	 * Delete the SavedModel from nodeBackend and delete corresponding session in 
 	 * the C++ backend if the session is only used by this TFSavedModel.
 	 *
-	 * @doc {heading: `Models`, subheading: `SavedModel`}
+	 * @doc {heading: 'Models', subheading: 'SavedModel'}
 	 */
 	 dispose() {
 	 	if (!this.disposed) {
@@ -252,6 +252,44 @@ export function getSignatureDefEntryFromMetaGraphInfo(
 		}
 	}
 
+	get outputNodeNames() {
+	  if (this.outputNodeNames_ != null) {
+	  	return this.outputNodeNames_;
+	  }
+	  this.outputNodeNames_ = 
+	  	Object.keys(thsi.signature.outputs)
+			.reduce((names: {[key: string]: string}, key: string) => {
+			  names[key] = this.signature.outputs[key].name;
+			  return names;
+			}, {});
+		return this.outputNodeNames_;
+	}
+
+	/**
+	 * Execute the inference for the input tensors.
+	 *
+	 * @param input The input tensors, when there is single input for the model, 
+	 * inputs param should be a Tensor. For models with multiple inputs, inputs 
+	 * params should be in either Tensor[] if the input order is fixed, or 
+	 * otherwise NamedTensorMap format. The keys in the NamedTensorMap are the 
+	 * name of input tensors in SavedModel signatureDef. It can be found through
+	 * `tf.node.getMaetaGraphsFromSavedModel()`.
+	 *
+	 *For batch inference execution, the tensors for each input need to be
+	 * concatenated together. For example with mobilenet, the required input shape
+	 * is [1, 244, 244, 3], which represents the [batch, height, width, channel].
+	 * If we are provide a batched data of 100 impages, the input tensor should be 
+	 * in the shape of [100, 244, 244, 3].
+	 *
+	 * @param config Prediction configuration for specifying the batch size.
+	 *
+	 * @returns Inference result tensors. The output would be singel Tensor if 
+	 * model has single output node, otherwise Tensor[] or NamedTensorMap[] will
+	 * be returned for model with multple outputs.
+	 *
+	 * @doc {heading: 'Models', subheading: 'SavedModel'}
+	 */
+	 
 
 
 
